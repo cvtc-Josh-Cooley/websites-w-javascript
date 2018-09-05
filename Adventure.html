@@ -1,0 +1,164 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Template</title>
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+  <style>
+	p {
+	  font-size: 20px;
+	  padding-right: 20px;
+	  display: inline-block;
+	  color: Lime;
+	  font-family: Courier;
+	}
+
+	
+	input {
+		background-color: black;
+		color: Lime;
+		border: none;
+	}
+	
+	input:focus {
+		outline: none;
+	}
+	
+  </style>
+  <script>
+	var travelVerbs = ['go', 'walk', 'travel'];
+	var fetchVerbs = ['get', 'take', 'grab'];
+	var lookVerbs = ['look', 'examine'];
+	var textCtr = 0;
+	var charCtr = 0;
+	var loc = [0, 0];
+	var possibleDirections = ['north', 'west'];
+	var rooms;
+	var currentRoom;
+	
+	class Room {
+		constructor(title, desc, posDir) {
+			this.title = title;
+			this.desc = desc;
+			this.posDir = posDir;
+		}
+	}
+	
+	function initializeRooms() {
+		rooms = [
+					[new Room('The Crash Site', 'The wreckage of your ship lays scattered behind you in a smoking crater.' 
+						+ ' You are standing in the depths of a steaming jungle. Paths lead to the north and west.', ['north', 'west'])],
+					[new Room('The North Jungle Path', 'The exotic jungle sounds grow silent as you approach.'
+						+ ' The path leads away to the north and to the south.', ['north', 'south'])]
+				];
+		currentRoom = rooms[0][0];
+	}
+	
+	function delayPrint(text) {
+		
+		textCtr = 0;
+		var textTimer = setInterval(() => interOut(text, textTimer), 50);
+	}
+		
+	function interOut(text, textTimer) {
+		
+		if(charCtr >= 75 && text[textCtr] == " ") {
+			document.getElementById("display").innerHTML += "<br> ";
+			charCtr = 0;
+		}
+		
+		document.getElementById("display").innerHTML += text[textCtr];
+		charCtr++;
+		textCtr++;
+		
+		if(textCtr == text.length - 1) {
+			clearInterval(textTimer);
+			textCtr = 0;
+			charCtr = 0;
+			document.getElementById("interface").focus();
+		}
+	}
+		
+	function handleKey(e) {
+		let keycode = (e.keyCode ? e.keyCode : e.which);
+		if(keycode == '13') {
+			parseText(document.getElementById("interface").value);
+			document.getElementById("interface").value = "";
+			clearDisplay();
+		}
+	}
+	
+	function parseText(userIn) {
+		userIn = userIn.toLowerCase();
+		let words = userIn.split(" ");
+		if(travelVerbs.includes(words[0])) {
+			travel(userIn);
+		} else if(fetchVerbs.includes(words[0])) {
+			fetch(userIn);
+		} else if(lookVerbs.includes(words[0])) {
+			look(userIn);
+		} else {
+			delayPrint("I don't understand. What are you trying to do? ");
+		}
+	}
+	
+	function travel(commandText) {
+		let moved = false;
+		let words = commandText.split(" ");
+		//words.forEach(function(element) { alert(element); });
+		possibleDirections = currentRoom.posDir;
+		//possibleDirections.forEach(function(element) { alert(element); });
+		
+		for(var i = 0; i < words.length; i++) {
+			
+			if (words[i] == "north" && possibleDirections.includes(words[i])) {
+				loc[0]++;
+				clearDisplay();
+				moved = true;
+				currentRoom = rooms[loc[0]][loc[1]];
+				delayPrint(rooms[loc[0]][loc[1]].desc);
+			} else if (words[i] == "south" && possibleDirections.includes(words[i])) {
+				loc[0]--;
+				clearDisplay();
+				moved = true;
+				currentRoom = rooms[loc[0]][loc[1]];
+				delayPrint(rooms[loc[0]][loc[1]].desc);
+			} else if (words[i] == "east" && possibleDirections.includes(words[i])) {
+				loc[1]++;
+				clearDisplay();
+				moved = true;
+				delayPrint(rooms[loc[0]][loc[1]].desc);
+			} else if (words[i] == "west" && possibleDirections.includes(words[i])) {
+				loc[1]--;
+				clearDisplay();
+				moved = true;
+				delayPrint(rooms[loc[0]][loc[1]].desc);
+			}
+					
+		}
+		
+		if(!moved) {
+			clearDisplay();
+			delayPrint("That direction is blocked..");
+		}	
+	}
+	
+	function clearDisplay() {
+		document.getElementById("display").innerHTML = "";
+	}
+	
+	initializeRooms();
+	//alert(rooms[1][0].title);
+	delayPrint(currentRoom.desc);
+  </script>
+  </head>
+
+<body style="background-color:black;">
+	<p id="display"></p>
+	<br>
+	<input type="text" id="interface" onkeypress="handleKey(event)" />
+</body>
+</html>
